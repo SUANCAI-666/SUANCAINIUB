@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>酸菜学长 - 洛阳理工学院26级新生AI咨询助手</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4A90D9;
+            --primary-light: #E8F4FD;
+            --secondary: #F5A623;
+            --bg: #F5F5F5;
+            --white: #FFFFFF;
+            --text: #333333;
+            --text-light: #666666;
+            --border: #E0E0E0;
+            --success: #52C41A;
+            --bubble-user: #4A90D9;
+            --bubble-ai: #FFFFFF;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text);
+        }
+
+        /* 顶部导航 */
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            flex-shrink: 0;
+        }
+
+        .header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .header-name {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .header-status {
+            font-size: 12px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #52C41A;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 聊天区域 */
+        .chat-container {
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 2px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: var(--primary);
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.6;
+            word-break: break-word;
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: var(--bubble-user);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai .message-content {
+            background: var(--bubble-ai);
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+            box-shadow: var(--shadow);
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        /* 快捷问题区域 */
+        .quick-questions {
+            margin: 8px 0 16px 46px;
+        }
+
+        .quick-title {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .quick-btn {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quick-btn:hover, .quick-btn:active {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .quick-btn .icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        /* 底部输入区 */
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border);
+            padding: 10px 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #F5F5F5;
+            border-radius: 20px;
+            padding: 8px 16px;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background: #3A7BC8;
+            transform: scale(1.05);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 二维码弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 12px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .modal-desc {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #F5F5F5;
+            border-radius: 12px;
+            margin: 0 auto 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--border);
+            color: var(--text-light);
+        }
+
+        .qr-placeholder .qr-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .qr-placeholder .qr-text {
+            font-size: 13px;
+        }
+
+        .qr-note {
+            font-size: 12px;
+            color: var(--secondary);
+            margin-bottom: 16px;
+        }
+
+        .modal-close {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 32px;
+            border-radius: 20px;
+            font-size: 15px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* 转人工提示 */
+        .transfer-hint {
+            background: #FFF7E6;
+            border: 1px solid #FFD591;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 8px 0 16px 46px;
+            font-size: 14px;
+            color: #D48806;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .transfer-hint .icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .transfer-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-left: auto;
+            font-family: inherit;
+        }
+
+        /* 打字动画 */
+        .typing {
+            display: flex;
+            gap: 4px;
+            padding: 16px 12px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #ccc;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* 图片占位 */
+        .img-placeholder {
+            width: 100%;
+            max-width: 280px;
+            height: 180px;
+            background: #F5F5F5;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            margin-top: 8px;
+            border: 2px dashed var(--border);
+        }
+
+        .img-placeholder .icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .img-placeholder .text {
+            font-size: 12px;
+        }
+
+        /* 列表样式 */
+        .content-list {
+            margin: 8px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .content-list li {
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .content-list li::before {
+            content: "•";
+            position: absolute;
+            left: 6px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .category-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 10px;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        /* 响应式 */
+        @media (min-width: 768px) {
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: #E8E8E8;
+            }
+
+            .app-container {
+                width: 100%;
+                max-width: 420px;
+                height: 90vh;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+                background: var(--bg);
+            }
+
+            .chat-container {
+                height: calc(90vh - 120px);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .app-container {
+                height: 100vh;
+            }
+        }
+
+        /* 提示条 */
+        .notice-bar {
+            background: linear-gradient(90deg, #FFF7E6 0%, #FFF0E6 100%);
+            border-left: 3px solid var(--secondary);
+            padding: 10px 14px;
+            margin: 8px 0 12px 46px;
+            border-radius: 0 12px 12px 0;
+            font-size: 13px;
+            color: #D48806;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notice-bar .icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部 -->
+        <div class="header">
+            <div class="avatar" style="background:url('assets/avatar/学长头像.jpg') center/cover; border:none;"></div>
+            <div class="header-info">
+                <div class="header-name">酸菜学长</div>
+                <div class="header-status">
+                    <span class="status-dot"></span>
+                    <span>在线 - 7×24小时为26级新生答疑</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 聊天区域 -->
+        <div class="chat-container" id="chatContainer">
+            <!-- 欢迎消息 -->
+            <div class="message ai" id="welcomeMsg">
+                <div class="message-avatar" style="background:url('assets/avatar/学长头像.jpg') center/cover;"></div>
+                <div>
+                    <div class="message-content">
+                        哈喽呀！我是酸菜学长，洛阳理工的老学长啦～🎉<br><br>
+                        有什么关于报到、宿舍、军训、专业、社团的问题，尽管问我！秒回的那种 ⚡<br><br>
+                        也可以直接点击下面的常见问题，一键获取答案 👇
+                    </div>
+                    <div class="message-time" id="welcomeTime"></div>
+                </div>
+            </div>
+
+            <!-- 快捷问题 -->
+            <div class="quick-questions">
+                <div class="quick-title">📌 新生最常问的问题</div>
+                <div class="quick-grid">
+                    <button class="quick-btn" onclick="sendQuickQuestion('报到需要带什么材料')">
+                        <span class="icon">📋</span>
+                        <span>报到要带什么材料</span>
+                    </button>
+                    <button class="quick-btn" onclick="sendQuickQuestion('宿舍条件怎么样')">
+                        <span class="icon">🏠</span>
+                        <span>宿舍条件怎么样</span>
+                    </button>
+                    <button class="quick-btn" onclick="sendQuickQuestion('军训多久')">
+                        <span class="icon">🎖️</span>
+                        <span>军训要多久</span>
+                    </button>
+                    <button class="quick-btn" onclick="sendQuickQuestion('学校地图')">
+                        <span class="icon">🗺️</span>
+                        <span>学校地图导航</span>
+                    </button>
+                    <button class="quick-btn" onclick="sendQuickQuestion('社团活动')">
+                        <span class="icon">🎸</span>
+                        <span>社团有哪些</span>
+                    </button>
+                    <button class="quick-btn" onclick="sendQuickQuestion('加微信')">
+                        <span class="icon">💬</span>
+                        <span>加学长微信咨询</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="notice-bar">
+                <span class="icon">💡</span>
+                <span>复杂问题可转人工，学长真人一对一解答～</span>
+            </div>
+        </div>
+
+        <!-- 输入区 -->
+        <div class="input-area">
+            <div class="input-wrapper">
+                <input type="text" id="userInput" placeholder="有问题直接问学长..." onkeypress="handleKeyPress(event)">
+            </div>
+            <button class="send-btn" onclick="sendMessage()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 二维码弹窗 -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal-content">
+            <div class="modal-avatar" style="background:url('assets/avatar/学长头像.jpg') center/cover;"></div>
+            <div class="modal-title">添加酸菜学长微信</div>
+            <div class="modal-desc">一对一咨询 + 开学资料大礼包 📦</div>
+            <img src="assets/images/微信二维码.jpg" alt="酸菜学长微信二维码" style="width:200px;height:200px;border-radius:12px;margin:0 auto 16px;display:block;object-fit:cover;">
+            <div class="qr-note">🔔 添加时备注"26级新生"，学长优先通过～</div>
+            <button class="modal-close" onclick="closeModal()">我知道了</button>
+        </div>
+    </div>
+
+    <script>
+        // 知识库
+        const knowledgeBase = {
+            '报到': {
+                keywords: ['报到', '开学', '材料', '带什么', '准备'],
+                response: `哈喽呀！报到材料学长给你整理好啦，对照着准备准没错～😎<br><br>
+<div class="category-title">📋 证件类（必带！）</div>
+<ul class="content-list">
+<li>录取通知书原件</li>
+<li>身份证及复印件（多备几份）</li>
+<li>准考证</li>
+<li>户口本复印件</li>
+<li>一寸、两寸证件照各一版（建议红白蓝底色都准备）+ 电子版存手机</li>
+<li>团员证及团组织关系档案</li>
+<li>贫困证明（申请助学金的同学需要）</li>
+<li>银行卡（学校发的储蓄卡，用来交学费）</li>
+</ul>
+<div class="category-title">🛏️ 床品类</div>
+<ul class="content-list">
+<li>床垫（床尺寸0.9×1.9m）</li>
+<li>床单被套枕套两套换洗</li>
+<li>夏被 + 薄棉被（洛阳秋天凉得快）</li>
+<li>枕头</li>
+<li>床帘 + 蚊帐（建议一体式，防蚊神器）</li>
+<li>眼罩耳塞（室友作息不同，你懂的😂）</li>
+</ul>
+<div class="category-title">🧴 洗护日用</div>
+<ul class="content-list">
+<li>牙具、毛巾、脸盆水桶</li>
+<li>洗衣液/洗衣凝珠</li>
+<li>防晒霜（军训救命神器！）</li>
+<li>花露水、除湿袋</li>
+<li>雨伞、拖鞋、运动鞋</li>
+<li>小锁（衣柜用）</li>
+</ul>
+<div class="category-title">💻 电子类</div>
+<ul class="content-list">
+<li>手机充电器</li>
+<li>合规充电宝</li>
+<li>U盘（交作业必备）</li>
+<li>USB插排（选有安全认证的）</li>
+<li>小台灯</li>
+</ul>
+<br>⏰ <b>报到时间：2026年9月11日-12日</b><br>
+📍 具体校区看录取通知书，有问题继续问学长哈～👋`
+            },
+            '宿舍': {
+                keywords: ['宿舍', '住宿', '寝室', '床位', '几人间'],
+                response: `哈喽呀！宿舍条件绝对是咱洛理的亮点之一，学长给你详细说说～🏠<br><br>
+<div class="category-title">🛏️ 宿舍配置</div>
+<ul class="content-list">
+<li><b>四人间</b>，上床下桌（独立书桌+衣柜，空间完全够用）</li>
+<li><b>空调全覆盖</b>！夏天不用蒸桑拿，爽歪歪 ❄️</li>
+<li><b>独立卫浴</b>，有阳台，不用跑公共澡堂</li>
+<li>冬季供暖，暖气很给力</li>
+<li>每层楼有吹风机、自助洗衣机、热水机</li>
+</ul>
+<div class="category-title">📶 网络与生活</div>
+<ul class="content-list">
+<li>校园网覆盖，也可以自己办宽带</li>
+<li>晚上一般11点左右熄灯（但空调插座不断电）</li>
+<li>宿舍门禁大概晚上11点，别太晚回哦</li>
+</ul>
+<div class="category-title">📸 宿舍实拍</div>
+<div class="img-placeholder">
+<div class="icon">📷</div>
+<div class="text">宿舍实拍图占位<br>请替换为真实照片</div>
+</div>
+<br>💡 <b>学长 Tips：</b><br>
+床帘建议买遮光好的，室友熬夜开灯不影响你睡觉～ 床垫别买太厚，护栏高度有限，安全第一！<br><br>
+还有啥想了解的，随时问！😉`
+            },
+            '军训': {
+                keywords: ['军训', '训练', '多久', '几天', '防晒'],
+                response: `哈喽呀！军训是大学第一课，学长帮你提前做好准备～🎖️<br><br>
+<div class="category-title">⏱️ 军训时长</div>
+<ul class="content-list">
+<li>需要 <b>21天</b>，从报到后就开始</li>
+<li>大概到9月底结束</li>
+<li>国庆后正式上课</li>
+</ul>
+<div class="category-title">📋 军训内容</div>
+<ul class="content-list">
+<li>站军姿、稍息立正、齐步走、正步走</li>
+<li>军体拳（这个挺有意思的）</li>
+<li>内务整理（被子叠成豆腐块😂）</li>
+<li>唱军歌、拉歌比赛</li>
+<li>最后会有汇报表演</li>
+</ul>
+<div class="category-title">🎒 必备物品</div>
+<ul class="content-list">
+<li><b>防晒霜（SPF50+）</b> - 洛阳9月太阳还是很毒的，不涂真的会晒伤！</li>
+<li><b>软鞋垫/姨妈鞋垫</b> - 解放鞋很硬，这个真的是神器，站一天脚不疼</li>
+<li>大容量水杯（补水很重要）</li>
+<li>藿香正气水（防中暑）</li>
+<li>润喉糖（喊口号嗓子受不了）</li>
+<li>发夹/皮筋（女生头发要扎起来）</li>
+</ul>
+<div class="category-title">💡 学长私房建议</div>
+<ul class="content-list">
+<li>早上一定要吃饱，不然站军姿会晕</li>
+<li>袜子穿深色，每天要检查</li>
+<li>别和教官顶嘴，听话就行，21天很快过去</li>
+<li>晚上早点睡，别熬夜玩手机了😂</li>
+</ul>
+<br>军训虽然累，但坚持下来你会收获一群"战友"，以后回忆起来还挺有意思的！加油 💪`
+            },
+            '地图': {
+                keywords: ['地图', '校区', '导航', '位置', '校区地图'],
+                response: `哈喽呀！洛阳理工学院一共有<b>三个校区</b>，学长给你整理好啦～🗺️<br><br>
+<div class="category-title">🏫 开元校区</div>
+<ul class="content-list">
+<li>地址：洛阳市洛龙区开元大道</li>
+<li>主要学院：计算机学院/软件学院、人工智能学院、外国语学院、经济与管理学院等</li>
+<li>最大的校区，设施最齐全</li>
+</ul>
+<img src="assets/images/开元校区地图.jpg" alt="开元校区地图" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0 12px 0;display:block;border:1px solid #E0E0E0;">
+<div class="category-title">🏯 王城校区</div>
+<ul class="content-list">
+<li>地址：洛阳市西工区王城大道</li>
+<li>主要学院：智能制造学院、材料科学与工程学院、会计学院、数学与物理教学部等</li>
+<li>老校区，底蕴深厚</li>
+</ul>
+<img src="assets/images/王城校区地图.jpg" alt="王城校区地图" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0 12px 0;display:block;border:1px solid #E0E0E0;">
+<div class="category-title">🎨 九都校区</div>
+<ul class="content-list">
+<li>地址：洛阳市老城区九都路</li>
+<li>主要学院：艺术设计与服装学院</li>
+<li>艺术气息最浓的校区～</li>
+</ul>
+<img src="assets/images/九都校区地图.jpg" alt="九都校区地图" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0 12px 0;display:block;border:1px solid #E0E0E0;">
+<br>💡 <b>学长 Tips：</b>报到时一定要看清自己专业在哪个校区，别跑错了！录取通知书上会写清楚的～😉`
+            },
+            '社团': {
+                keywords: ['社团', '学生会', '组织', '活动', '兴趣'],
+                response: `哈喽呀！大学生活不只有学习，社团活动也是超精彩的一部分～🎸<br><br>
+<div class="category-title">思想政治类</div>
+<ul class="content-list">
+<li>灯塔研习社（王城校区）</li>
+<li>会马营（王城校区）</li>
+<li>反邪教协会（开元校区）</li>
+<li>校团委国旗护卫队（王城校区）</li>
+<li>学生模拟政协协会（开元校区）</li>
+<li>校园安全志愿者协会（开元校区）</li>
+</ul>
+<div class="category-title">学术科技类</div>
+<ul class="content-list">
+<li>大学生英语协会（开元校区）</li>
+<li>自由飞翔航模协会（王城校区）</li>
+<li>梦想机器人协会（王城校区）</li>
+<li>智能控制俱乐部（开元校区）</li>
+<li>大学生科学与技术协会（王城校区）</li>
+<li>洛阳理工学院数学建模协会（王城校区）</li>
+<li>汽车爱好者协会（王城校区）</li>
+<li>IDEA制造社（王城校区）</li>
+<li>电脑协会（开元校区）</li>
+<li>虚拟现实艺术社（九都校区）</li>
+<li>VR社团（开元校区）</li>
+<li>智创未来协会（开元校区）</li>
+<li>启明金相社（王城校区）</li>
+<li>惟新科技协会（开元校区）</li>
+<li>星引力科创社（开元校区）</li>
+<li>大学生跨境电商创新创业社（开元校区）</li>
+<li>俄语联盟社（开元校区）</li>
+<li>智能创新俱乐部（开元校区）</li>
+<li>AI深度学习飞浆领航团（开元校区）</li>
+<li>财务共享服务社团（王城校区）</li>
+<li>创团队信息技术协会（开元校区）</li>
+<li>国际交流协会（开元校区）</li>
+<li>智能科技创新协会（开元校区）</li>
+<li>LED智慧照明社团（开元校区）</li>
+</ul>
+<div class="category-title">创新创业类</div>
+<ul class="content-list">
+<li>营销创意社（开元校区）</li>
+<li>营销实践社（开元校区）</li>
+<li>挑战杯荟英社（王城校区）</li>
+<li>互联网+智联社（开元校区）</li>
+<li>智领“企”航（开元校区）</li>
+<li>“红色螺丝刀”社（王城校区）</li>
+<li>创新创业社（开元校区）</li>
+<li>优创社（开元校区）</li>
+<li>“红色会计”科创学会社（王城校区）</li>
+<li>财会之星学会社（王城校区）</li>
+<li>AI创客空间社（开元校区）</li>
+<li>创客协会（王城校区）</li>
+<li>瞳话社（九都校区）</li>
+<li>大学生职业规划协会（开元校区）</li>
+<li>科技制作协会（王城校区）</li>
+<li>大学生3D协会（王城校区）</li>
+<li>设计创客协会（九都校区）</li>
+<li>大学生职业规划社（王城校区）</li>
+<li>红色会计（王城校区）</li>
+<li>AI深度学习领航团（开元校区）</li>
+</ul>
+<div class="category-title">文化体育类</div>
+<ul class="content-list">
+<li>排球爱好者协会（王城校区）</li>
+<li>桥牌（王城校区）</li>
+<li>辩论协会（开元校区）</li>
+<li>青春魔方社（开元校区）</li>
+<li>化妆礼仪协会（开元校区）</li>
+<li>星光主持协会（开元校区）</li>
+<li>大学生民族音乐协会（王城校区）</li>
+<li>洛阳理工学院吉他协会（开元校区）</li>
+<li>书画协会（九都校区）</li>
+<li>相声小品协会（开元校区）</li>
+<li>心远棋社（王城校区）</li>
+<li>心语手语社（开元校区）</li>
+<li>书法协会（九都校区）</li>
+<li>清风茶艺社（开元校区）</li>
+<li>华康汉服社（九都校区）</li>
+<li>陶艺社（九都校区）</li>
+<li>练仪旗袍社（九都校区）</li>
+<li>此声不换音乐社（开元校区）</li>
+<li>大学生曲艺艺术艺术团（王城校区）</li>
+<li>大学生民族音乐社（王城校区）</li>
+<li>云逸书画社（九都校区）</li>
+<li>篮球社（王城校区）</li>
+<li>排球精英社（王城校区）</li>
+<li>排舞精英社（开元校区）</li>
+<li>金球社（王城校区）</li>
+<li>乒乓球协会（王城校区）</li>
+<li>啦啦操&街舞精英社（开元校区）</li>
+<li>体育舞蹈精英社（开元校区）</li>
+<li>羽毛球协会（王城校区）</li>
+<li>毽球精英社（王城校区）</li>
+<li>健身健美精英协会（王城校区）</li>
+</ul>
+<div class="category-title">志愿公益类</div>
+<ul class="content-list">
+<li>向日葵支教团（开元校区）</li>
+<li>星火红十字服务团（开元校区）</li>
+<li>心海公益社（开元校区）</li>
+<li>流浪动物关爱协会（王城校区）</li>
+<li>环保协会（开元校区）</li>
+<li>星火燎原理论宣讲团（开元校区）</li>
+<li>阳光义修社（开元校区）</li>
+<li>满天星志愿服务团（开元校区）</li>
+<li>草木有语”植物科普社团（开元校区）</li>
+<li>校园安全志愿者协会（开元校区）</li>
+</ul>
+<div class="category-title">自律互助类</div>
+<ul class="content-list">
+<li>共清橙协会（开元校区）</li>
+<li>校团委礼仪队（开元校区）</li>
+<li>疯狂学习联合会（王城校区）</li>
+<li>心理协会（开元校区）</li>
+<li>阳光8修社（开元校区）</li>
+<li>青春健康同伴社（开元校区）</li>
+</ul>
+<br>社团招新一般在军训后，也就是"百团大战"，到时候可以去摊位逛逛，热闹得很！🎉<br><br>
+还有啥想了解的？😄`
+            },
+            '校园卡': {
+                keywords: ['校园卡', '饭卡', '一卡通', '充值', '刷卡', '消费卡'],
+                response: `校园卡转微信`
+            },
+            '微信': {
+                keywords: ['微信', '加好友', '联系方式', '二维码', '一对一', '咨询'],
+                response: `微信二维码`
+            },
+            '转人工': {
+                keywords: ['人工', '真人', '电话', '找学长', '客服'],
+                response: `transfer`
+            }
+        };
+
+        // 默认回复
+        const defaultResponses = [
+            "哈喽呀！这个问题学长暂时还没收录到知识库里 😅<br><br>你可以加学长微信一对一咨询，或者问问其他问题～👇",
+            "哎呀，这个问题有点超纲了 😂<br><br>建议你加学长微信详细聊，或者试试问其他常见问题～",
+            "哈喽！这个问题比较复杂，文字可能讲不清楚 🤔<br><br>要不你加学长微信，咱们语音聊？"
+        ];
+
+        // 初始化时间
+        document.getElementById('welcomeTime').textContent = formatTime(new Date());
+
+        function formatTime(date) {
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendQuickQuestion(question) {
+            addMessage(question, 'user');
+            showTyping();
+            setTimeout(() => {
+                removeTyping();
+                const response = getResponse(question);
+                if (response === '微信二维码') {
+                    showQRModal();
+                    addMessage('哈喽呀！扫码加学长微信，一对一解答 + 领取开学资料大礼包～ 📦', 'ai');
+                } else if (response === '校园卡转微信') {
+                    showQRModal();
+                    addMessage('哈喽呀！校园卡的问题比较细，每个人的情况不太一样 😊<br><br>学长建议你扫码加微信，我一对一帮你弄明白～💳', 'ai');
+                } else if (response === 'transfer') {
+                    showTransferHint();
+                } else {
+                    addMessage(response, 'ai');
+                }
+            }, 800 + Math.random() * 600);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            input.value = '';
+
+            showTyping();
+            setTimeout(() => {
+                removeTyping();
+                const response = getResponse(text);
+                if (response === '微信二维码') {
+                    showQRModal();
+                    addMessage('哈喽呀！扫码加学长微信，一对一解答 + 领取开学资料大礼包～ 📦', 'ai');
+                } else if (response === '校园卡转微信') {
+                    showQRModal();
+                    addMessage('哈喽呀！校园卡的问题比较细，每个人的情况不太一样 😊<br><br>学长建议你扫码加微信，我一对一帮你弄明白～💳', 'ai');
+                } else if (response === 'transfer') {
+                    showTransferHint();
+                } else {
+                    addMessage(response, 'ai');
+                }
+            }, 800 + Math.random() * 600);
+        }
+
+        function addMessage(text, type) {
+            const container = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const time = formatTime(new Date());
+            const avatarStyle = type === 'user' ? ' style="background:url(\'user-avatar.jpg\') center/cover;"' : ' style="background:url(\'avatar.jpg\') center/cover;"';
+            const avatarHtml = `<div class="message-avatar"${avatarStyle}></div>`;
+
+            messageDiv.innerHTML = `
+                ${avatarHtml}
+                <div>
+                    <div class="message-content">${text}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+
+            container.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            const container = document.getElementById('chatContainer');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar" style="background:url('assets/avatar/学长头像.jpg') center/cover;"></div>
+                <div class="message-content">
+                    <div class="typing">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function removeTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        function getResponse(text) {
+            const lowerText = text.toLowerCase();
+
+            for (const key in knowledgeBase) {
+                const item = knowledgeBase[key];
+                if (item.keywords.some(kw => lowerText.includes(kw))) {
+                    return item.response;
+                }
+            }
+
+            // 随机默认回复
+            return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+        }
+
+        function showQRModal() {
+            document.getElementById('qrModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('qrModal').classList.remove('active');
+        }
+
+        function showTransferHint() {
+            const container = document.getElementById('chatContainer');
+            const hintDiv = document.createElement('div');
+            hintDiv.className = 'transfer-hint';
+            hintDiv.innerHTML = `
+                <span class="icon">👨‍💼</span>
+                <span>这个问题比较复杂，建议转人工咨询～</span>
+                <button class="transfer-btn" onclick="showQRModal()">加微信</button>
+            `;
+            container.appendChild(hintDiv);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 点击遮罩关闭弹窗
+        document.getElementById('qrModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>
